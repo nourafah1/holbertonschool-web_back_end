@@ -2,7 +2,6 @@
 """This module provides simple pagination for a CSV dataset."""
 
 import csv
-import math
 from typing import List
 
 
