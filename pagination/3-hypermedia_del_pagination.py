@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
-"""This module provides deletion-resilient hypermedia pagination."""
+"""
+Deletion-resilient hypermedia pagination
+"""
 
 import csv
-from typing import Dict, List, Optional
+import math
+from typing import List, Dict
 
 
 class Server:
@@ -10,13 +13,12 @@ class Server:
 
     DATA_FILE = "Popular_Baby_Names.csv"
 
-    def __init__(self) -> None:
-        """Initialize the dataset and indexed dataset caches."""
+    def __init__(self):
         self.__dataset = None
         self.__indexed_dataset = None
 
     def dataset(self) -> List[List]:
-        """Return the cached dataset of popular baby names."""
+        """Cached dataset."""
         if self.__dataset is None:
             with open(self.DATA_FILE) as f:
                 reader = csv.reader(f)
@@ -26,7 +28,7 @@ class Server:
         return self.__dataset
 
     def indexed_dataset(self) -> Dict[int, List]:
-        """Return the dataset indexed by its original position."""
+        """Dataset indexed by sorting position, starting at 0."""
         if self.__indexed_dataset is None:
             dataset = self.dataset()
             self.__indexed_dataset = {
@@ -36,31 +38,28 @@ class Server:
         return self.__indexed_dataset
 
     def get_hyper_index(
-            self,
-            index: Optional[int] = None,
-            page_size: int = 10) -> Dict:
-        """Return a deletion-resilient page starting at the given index."""
-        dataset = self.indexed_dataset()
+            self, index: int = None, page_size: int = 10) -> Dict:
+        """Return a page of the dataset using an index."""
 
-        assert index is None or (
-            isinstance(index, int) and 0 <= index < len(dataset)
-        )
-        assert isinstance(page_size, int) and page_size > 0
-
-        if index is None:
-            index = 0
+        assert isinstance(index, int)
+        assert index >= 0
+        assert index < len(self.indexed_dataset())
 
         data = []
-        next_index = index
 
-        while len(data) < page_size and next_index < len(dataset):
-            if next_index in dataset:
-                data.append(dataset[next_index])
-            next_index += 1
+        current_index = index
+
+        while current_index < len(self.indexed_dataset()) \
+                and len(data) < page_size:
+
+            if current_index in self.indexed_dataset():
+                data.append(self.indexed_dataset()[current_index])
+
+            current_index += 1
 
         return {
-            "index": index,
-            "data": data,
-            "page_size": len(data),
-            "next_index": next_index
+            'index': index,
+            'data': data,
+            'page_size': len(data),
+            'next_index': current_index
         }
