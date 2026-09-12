@@ -8,7 +8,9 @@ from typing import List
 
 def index_range(page: int, page_size: int) -> tuple:
     """Return the start and end indexes for a pagination range."""
-    return ((page - 1) * page_size, page * page_size)
+    start_index = (page - 1) * page_size
+    end_index = page * page_size
+    return (start_index, end_index)
 
 
 class Server:
@@ -17,6 +19,7 @@ class Server:
     DATA_FILE = "Popular_Baby_Names.csv"
 
     def __init__(self):
+        """Initialize the server dataset cache."""
         self.__dataset = None
 
     def dataset(self) -> List[List]:
@@ -32,12 +35,9 @@ class Server:
     def get_page(self, page: int = 1,
                  page_size: int = 10) -> List[List]:
         """Return the requested page of the dataset."""
-        assert isinstance(page, int) and page > 0
-        assert isinstance(page_size, int) and page_size > 0
+        assert type(page) is int and page > 0
+        assert type(page_size) is int and page_size > 0
 
-        start, end = index_range(page, page_size)
+        start_index, end_index = index_range(page, page_size)
 
-        if start >= len(self.dataset()):
-            return []
-
-        return self.dataset()[start:end]
+        return self.dataset()[start_index:end_index]
